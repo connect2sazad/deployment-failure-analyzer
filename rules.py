@@ -172,26 +172,51 @@ FAILURE_RULES = [
         "patterns": [
             {
                 "regex": r"connection refused",
-                "weight": 8,
+                "weight": 9,
                 "description": "Connection to the target service was refused"
             },
             {
-                "regex": r"network is unreachable",
+                "regex": r"failed to connect to .* port \d+",
+                "weight": 10,
+                "description": "Could not connect to the target service"
+            },
+            {
+                "regex": r"couldn'?t connect to server",
                 "weight": 9,
+                "description": "Connection to the server failed"
+            },
+            {
+                "regex": r"curl:\s*\(7\)",
+                "weight": 8,
+                "description": "curl failed to connect to the target host"
+            },
+            {
+                "regex": r"network is unreachable",
+                "weight": 10,
                 "description": "The destination network could not be reached"
             },
             {
                 "regex": r"could not resolve host",
-                "weight": 9,
+                "weight": 10,
                 "description": "DNS resolution failed"
             },
             {
                 "regex": r"temporary failure in name resolution",
-                "weight": 9,
+                "weight": 10,
                 "description": "Temporary DNS resolution failure"
+            },
+            {
+                "regex": r"connection timed out",
+                "weight": 9,
+                "description": "Connection to the target timed out"
+            },
+            {
+                "regex": r"operation timed out",
+                "weight": 8,
+                "description": "Network operation timed out"
             }
         ],
-        "cause": "The application could not reach a required network service.",
-        "fix": "Check DNS, routing, firewall rules, security groups, listening services, and required ports."
+        "cause": "The deployment could not connect to a required network service.",
+        "fix": "Verify that the target service is running and listening on the expected port. Check the hostname, port, DNS, firewall rules, security groups, routing, and service configuration."
     }
 ]

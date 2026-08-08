@@ -122,3 +122,11 @@ body {
 .table tbody tr:hover {
     background: #f8f9fa;
 }
+
+.failed-run {
+    background: rgba(220, 53, 69, 0.025);
+}
+
+.failed-run:hover {
+    background: rgba(220, 53, 69, 0.06) !important;
+}
