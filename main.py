@@ -1,8 +1,13 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from analyzer import analyze_log
+from database import Base, engine, SessionLocal
+from models import Analysis
+
+Base.metadata.create_all(bind=engine)  # Create the database tables if they don't exist
 
 # Create a FastAPI app instance with a title and version
 app = FastAPI(
@@ -41,4 +46,54 @@ def analyze(request: LogRequest):
 
     result = analyze_log(request.log)
 
+    db: Session = SessionLocal()
+
+    try:
+
+        analysis = Analysis(
+            log=request.log,
+            category=result["category"],
+            confidence=result["confidence"],
+            cause=result["cause"],
+            fix=result["fix"]
+        )
+
+        db.add(analysis)
+        db.commit()
+        db.refresh(analysis)
+
+        result["id"] = analysis.id
+
+    finally:
+        db.close()
+
     return result
+
+@app.get("/analyses")
+def get_analyses():
+    db: Session = SessionLocal()
+
+    try:
+        analyses = (
+            db.query(Analysis)
+            .order_by(Analysis.id.desc())
+            .limit(20)
+            .all()
+        )
+
+        return [
+            {
+                "id": analysis.id,
+                "log": analysis.log,
+                "category": analysis.category,
+                "confidence": analysis.confidence,
+                "cause": analysis.cause,
+                "fix": analysis.fix,
+                "created_at": analysis.created_at
+            }
+
+            for analysis in analyses
+        ]
+    
+    finally:
+        db.close()
